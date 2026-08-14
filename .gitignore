@@ -1,0 +1,16 @@
+# Build output
+bin/
+obj/
+
+# dotnet tools (if switching to local tool manifest later)
+.config/
+
+# Rider / VS
+.idea/
+.vs/
+*.user
+
+# EF Core local db artifacts
+*.db
+*.db-shm
+*.db-wal

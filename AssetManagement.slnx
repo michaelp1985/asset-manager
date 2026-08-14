@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AssetManagement.Catalog/AssetManagement.Catalog.csproj" />
+    <Project Path="src/AssetManagement.Cli/AssetManagement.Cli.csproj" />
+    <Project Path="src/AssetManagement.Core/AssetManagement.Core.csproj" />
+    <Project Path="src/AssetManagement.Data/AssetManagement.Data.csproj" />
+    <Project Path="src/AssetManagement.Mcp/AssetManagement.Mcp.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AssetManagement.Catalog.Tests/AssetManagement.Catalog.Tests.csproj" />
+    <Project Path="tests/AssetManagement.Data.Tests/AssetManagement.Data.Tests.csproj" />
+  </Folder>
+</Solution>
