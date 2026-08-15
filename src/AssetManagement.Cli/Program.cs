@@ -26,6 +26,10 @@ app.Configure(config =>
         .WithDescription("Import an asset file into the library");
     config.AddCommand<ExportAssetCommand>("export")
         .WithDescription("Copy an asset into a game project directory and log the usage");
+    config.AddCommand<TagAssetCommand>("tag")
+        .WithDescription("Add or remove tags on an existing asset");
+    config.AddCommand<UpdateAssetCommand>("update")
+        .WithDescription("Update an asset's name, description, or metadata");
     config.AddBranch("catalog", branch =>
     {
         branch.AddCommand<ExportCatalogCommand>("export")

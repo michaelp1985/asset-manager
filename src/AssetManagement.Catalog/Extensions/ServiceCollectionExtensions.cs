@@ -20,6 +20,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<CatalogExporter>();
         services.AddScoped<AssetImportService>();
         services.AddScoped<AssetExportService>();
+        services.AddScoped<AssetEditService>();
 
         return services;
     }
