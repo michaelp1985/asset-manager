@@ -8,7 +8,7 @@ using System.Text.Json;
 namespace AssetManagement.Mcp.Tools;
 
 [McpServerToolType]
-public class AssetTools(AssetImportService importService)
+public class AssetTools(AssetImportService importService, AssetExportService exportService)
 {
     [McpServerTool, Description("Import an asset file into the library. Returns the created asset record as JSON.")]
     public async Task<string> ImportAsset(
@@ -33,6 +33,21 @@ public class AssetTools(AssetImportService importService)
             MetaJson: metaJson);
 
         var result = await importService.ImportAsync(request);
+
+        return JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true });
+    }
+
+    [McpServerTool, Description("Export an asset from the library into a game project directory. Returns the export record as JSON.")]
+    public async Task<string> ExportAsset(
+        [Description("Asset ID (GUID) to export")] string assetId,
+        [Description("Absolute path to the destination directory in the game project")] string destinationDir,
+        [Description("Name of the game project receiving the asset")] string gameName)
+    {
+        if (!Guid.TryParse(assetId, out var guid))
+            throw new ArgumentException($"'{assetId}' is not a valid asset ID.");
+
+        var request = new AssetExportRequest(guid, destinationDir, gameName);
+        var result = await exportService.ExportAsync(request);
 
         return JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true });
     }

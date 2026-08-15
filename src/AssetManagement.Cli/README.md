@@ -60,6 +60,30 @@ dotnet run --project src/AssetManagement.Cli -- import /path/to/Wizard_Move.png 
 
 ---
 
+### `export`
+
+Copies an asset file into a game project directory and logs the usage. The exported filename strips the GUID prefix — game projects receive `wizard-move.png`, not `902a690f..._wizard-move.png`.
+
+```
+asset export <id> <destination> --game <game-name>
+```
+
+| Argument / Option | Required | Description |
+|---|---|---|
+| `<id>` | Yes | Asset ID (GUID) — from `catalog.json` or import output |
+| `<destination>` | Yes | Directory in the game project to copy the file into |
+| `--game` | Yes | Name of the game project (recorded in usage log) |
+
+**Example**
+
+```bash
+dotnet run --project src/AssetManagement.Cli -- export 902a690f-e476-4501-8956-4de1e47dab13 \
+  /path/to/MyGame/assets/sprites \
+  --game "MyGame"
+```
+
+---
+
 ### `catalog export`
 
 Regenerates `catalog.json` from the current database state without performing any other operation. Useful after direct database changes or to force a sync.

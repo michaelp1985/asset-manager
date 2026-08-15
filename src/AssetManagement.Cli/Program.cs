@@ -24,6 +24,8 @@ app.Configure(config =>
     config.SetApplicationName("asset");
     config.AddCommand<ImportAssetCommand>("import")
         .WithDescription("Import an asset file into the library");
+    config.AddCommand<ExportAssetCommand>("export")
+        .WithDescription("Copy an asset into a game project directory and log the usage");
     config.AddBranch("catalog", branch =>
     {
         branch.AddCommand<ExportCatalogCommand>("export")
