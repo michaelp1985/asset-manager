@@ -8,7 +8,7 @@ public sealed class TypeResolver(IServiceProvider provider) : ITypeResolver, IDi
     private readonly IServiceScope _scope = provider.CreateScope();
 
     public object? Resolve(Type? type)
-        => type is null ? null : _scope.ServiceProvider.GetService(type);
+        => type is null ? null : _scope.ServiceProvider.GetService(type) ?? Activator.CreateInstance(type);
 
     public void Dispose() => _scope.Dispose();
 }

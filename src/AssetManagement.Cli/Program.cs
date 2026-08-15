@@ -24,6 +24,11 @@ app.Configure(config =>
     config.SetApplicationName("asset");
     config.AddCommand<ImportAssetCommand>("import")
         .WithDescription("Import an asset file into the library");
+    config.AddBranch("catalog", branch =>
+    {
+        branch.AddCommand<ExportCatalogCommand>("export")
+            .WithDescription("Regenerate catalog.json from the current database state");
+    });
 });
 
 return await app.RunAsync(args);
