@@ -214,6 +214,77 @@ Catalog regenerated: /path/to/AssetManagement/catalog/catalog.json
 
 ---
 
+### `collection create`
+
+Creates a new collection. Returns the collection ID needed for `add` and `remove`.
+
+```
+asset collection create --name <name> [--desc <description>]
+```
+
+| Option | Required | Description |
+|---|---|---|
+| `--name` | Yes | Collection name |
+| `--desc` | No | Optional description |
+
+**Example**
+
+```bash
+dotnet run --project src/AssetManagement.Cli -- collection create \
+  --name "Fantasy Pack" \
+  --desc "Fantasy-themed spritesheets and character art"
+```
+
+---
+
+### `collection add`
+
+Adds an asset to a collection. No-ops silently if the asset is already a member.
+
+```
+asset collection add <collection-id> <asset-id>
+```
+
+**Example**
+
+```bash
+dotnet run --project src/AssetManagement.Cli -- collection add 1 902a690f-e476-4501-8956-4de1e47dab13
+```
+
+---
+
+### `collection remove`
+
+Removes an asset from a collection.
+
+```
+asset collection remove <collection-id> <asset-id>
+```
+
+**Example**
+
+```bash
+dotnet run --project src/AssetManagement.Cli -- collection remove 1 902a690f-e476-4501-8956-4de1e47dab13
+```
+
+---
+
+### `collection show`
+
+Lists all collections with their ID, name, description, and asset count.
+
+```
+asset collection show
+```
+
+**Example**
+
+```bash
+dotnet run --project src/AssetManagement.Cli -- collection show
+```
+
+---
+
 ## Tag Categories
 
 | Category | Purpose | Examples |

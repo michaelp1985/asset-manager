@@ -1,6 +1,7 @@
 using AssetManagement.Catalog.Extensions;
 using AssetManagement.Catalog.Settings;
 using AssetManagement.Cli.Commands;
+using AssetManagement.Cli.Commands.Collection;
 using AssetManagement.Cli.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
@@ -34,6 +35,17 @@ app.Configure(config =>
         .WithDescription("Search assets by tag, type, or name (at least one filter required)");
     config.AddCommand<ShowAssetCommand>("show")
         .WithDescription("Show full detail for a single asset including usage history");
+    config.AddBranch("collection", branch =>
+    {
+        branch.AddCommand<CreateCollectionCommand>("create")
+            .WithDescription("Create a new collection");
+        branch.AddCommand<AddToCollectionCommand>("add")
+            .WithDescription("Add an asset to a collection");
+        branch.AddCommand<RemoveFromCollectionCommand>("remove")
+            .WithDescription("Remove an asset from a collection");
+        branch.AddCommand<ShowCollectionsCommand>("show")
+            .WithDescription("List all collections with asset counts");
+    });
     config.AddBranch("catalog", branch =>
     {
         branch.AddCommand<ExportCatalogCommand>("export")

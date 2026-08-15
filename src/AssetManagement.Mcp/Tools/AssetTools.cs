@@ -8,7 +8,7 @@ using System.Text.Json;
 namespace AssetManagement.Mcp.Tools;
 
 [McpServerToolType]
-public class AssetTools(AssetImportService importService, AssetExportService exportService)
+public class AssetTools(AssetImportService importService, AssetExportService exportService, CollectionService collectionService)
 {
     [McpServerTool, Description("Import an asset file into the library. Returns the created asset record as JSON.")]
     public async Task<string> ImportAsset(
@@ -49,6 +49,42 @@ public class AssetTools(AssetImportService importService, AssetExportService exp
         var request = new AssetExportRequest(guid, destinationDir, gameName);
         var result = await exportService.ExportAsync(request);
 
+        return JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true });
+    }
+
+    [McpServerTool, Description("Create a new asset collection. Returns the created collection as JSON.")]
+    public async Task<string> CreateCollection(
+        [Description("Collection name")] string name,
+        [Description("Optional description")] string? description = null)
+    {
+        var result = await collectionService.CreateAsync(name, description);
+        return JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true });
+    }
+
+    [McpServerTool, Description("Add an asset to a collection.")]
+    public async Task AddAssetToCollection(
+        [Description("Collection ID")] int collectionId,
+        [Description("Asset ID (GUID)")] string assetId)
+    {
+        if (!Guid.TryParse(assetId, out var guid))
+            throw new ArgumentException($"'{assetId}' is not a valid asset ID.");
+        await collectionService.AddAssetAsync(collectionId, guid);
+    }
+
+    [McpServerTool, Description("Remove an asset from a collection.")]
+    public async Task RemoveAssetFromCollection(
+        [Description("Collection ID")] int collectionId,
+        [Description("Asset ID (GUID)")] string assetId)
+    {
+        if (!Guid.TryParse(assetId, out var guid))
+            throw new ArgumentException($"'{assetId}' is not a valid asset ID.");
+        await collectionService.RemoveAssetAsync(collectionId, guid);
+    }
+
+    [McpServerTool, Description("List all collections with their asset counts. Returns JSON array.")]
+    public async Task<string> GetCollections()
+    {
+        var result = await collectionService.GetAllAsync();
         return JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true });
     }
 
