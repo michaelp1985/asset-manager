@@ -8,7 +8,7 @@ using System.Text.Json;
 namespace AssetManagement.Mcp.Tools;
 
 [McpServerToolType]
-public class AssetTools(AssetImportService importService, AssetExportService exportService, CollectionService collectionService)
+public class AssetTools(AssetImportService importService, AssetExportService exportService, CollectionService collectionService, AssetQueryService queryService)
 {
     [McpServerTool, Description("Import an asset file into the library. Returns the created asset record as JSON.")]
     public async Task<string> ImportAsset(
@@ -86,6 +86,32 @@ public class AssetTools(AssetImportService importService, AssetExportService exp
     {
         var result = await collectionService.GetAllAsync();
         return JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true });
+    }
+
+    [McpServerTool, Description("Search assets by tag, type, or name. At least one filter required. Returns paginated JSON.")]
+    public async Task<string> SearchAssets(
+        [Description("Filter by tag name (partial match)")] string? tag = null,
+        [Description("Filter by asset type: Spritesheet | Image | Audio | Tileset | Font | Video | Data")] string? type = null,
+        [Description("Filter by asset name (partial match)")] string? name = null,
+        [Description("Page number (default: 1)")] int page = 1,
+        [Description("Results per page (default: 20)")] int pageSize = 20)
+    {
+        if (string.IsNullOrWhiteSpace(tag) && string.IsNullOrWhiteSpace(type) && string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Specify at least one of: tag, type, or name.");
+
+        var result = await queryService.SearchAsync(tag, type, name, page, pageSize);
+        return JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true });
+    }
+
+    [McpServerTool, Description("Get full detail for a single asset including tags, metadata, and usage history. Returns JSON, or null if not found.")]
+    public async Task<string?> GetAsset(
+        [Description("Asset ID (GUID)")] string assetId)
+    {
+        if (!Guid.TryParse(assetId, out var guid))
+            throw new ArgumentException($"'{assetId}' is not a valid asset ID.");
+
+        var result = await queryService.GetByIdAsync(guid);
+        return result is null ? null : JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true });
     }
 
     private static List<TagInput> ParseTags(string? tags)
