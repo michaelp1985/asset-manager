@@ -84,6 +84,115 @@ dotnet run --project src/AssetManagement.Cli -- export 902a690f-e476-4501-8956-4
 
 ---
 
+### `tag`
+
+Adds or removes tags on an existing asset. Regenerates `catalog.json` when done. At least one of `--add` or `--remove` is required.
+
+```
+asset tag <id> [--add <tags>] [--remove <names>]
+```
+
+| Argument / Option | Required | Description |
+|---|---|---|
+| `<id>` | Yes | Asset ID (GUID) |
+| `--add` | No | Comma-separated `name:Category` pairs to add |
+| `--remove` | No | Comma-separated tag names to remove |
+
+**Examples**
+
+```bash
+# Add a tag
+dotnet run --project src/AssetManagement.Cli -- tag 902a690f-e476-4501-8956-4de1e47dab13 \
+  --add "looping:Attribute"
+
+# Remove a tag
+dotnet run --project src/AssetManagement.Cli -- tag 902a690f-e476-4501-8956-4de1e47dab13 \
+  --remove "looping"
+
+# Add and remove in one operation
+dotnet run --project src/AssetManagement.Cli -- tag 902a690f-e476-4501-8956-4de1e47dab13 \
+  --add "idle:Attribute" --remove "movement"
+```
+
+---
+
+### `update`
+
+Updates an asset's name, description, or metadata. Regenerates `catalog.json` when done. At least one option is required.
+
+```
+asset update <id> [--name <name>] [--desc <description>] [--meta <json>]
+```
+
+| Argument / Option | Required | Description |
+|---|---|---|
+| `<id>` | Yes | Asset ID (GUID) |
+| `--name` | No | New name for the asset |
+| `--desc` | No | New description |
+| `--meta` | No | Replacement JSON metadata blob |
+
+**Examples**
+
+```bash
+# Update description
+dotnet run --project src/AssetManagement.Cli -- update 902a690f-e476-4501-8956-4de1e47dab13 \
+  --desc "Updated description here."
+
+# Update name and metadata
+dotnet run --project src/AssetManagement.Cli -- update 902a690f-e476-4501-8956-4de1e47dab13 \
+  --name "Wizard Walk" \
+  --meta '{"frames":24,"columns":6,"rows":4,"directions":4,"framesPerDirection":6}'
+```
+
+---
+
+### `search`
+
+Searches assets by tag, type, or name. At least one filter is required. Results are paginated.
+
+```
+asset search [--tag <name>] [--type <type>] [--name <name>] [--page <n>] [--size <n>]
+```
+
+| Option | Required | Description |
+|---|---|---|
+| `--tag` | At least one | Filter by tag name (partial match) |
+| `--type` | At least one | Filter by asset type |
+| `--name` | At least one | Filter by asset name (partial match) |
+| `--page` | No | Page number (default: 1) |
+| `--size` | No | Results per page (default: 20) |
+
+**Examples**
+
+```bash
+# By type
+dotnet run --project src/AssetManagement.Cli -- search --type Spritesheet
+
+# By tag
+dotnet run --project src/AssetManagement.Cli -- search --tag fantasy
+
+# Combined filters with pagination
+dotnet run --project src/AssetManagement.Cli -- search --name wizard --type Spritesheet --page 1 --size 10
+```
+
+---
+
+### `show`
+
+Displays full detail for a single asset including tags, metadata, and usage history.
+
+```
+asset show <id>
+```
+
+**Example**
+
+```bash
+dotnet run --project src/AssetManagement.Cli -- show 902a690f-e476-4501-8956-4de1e47dab13
+```
+
+---
+
 ### `catalog export`
 
 Regenerates `catalog.json` from the current database state without performing any other operation. Useful after direct database changes or to force a sync.

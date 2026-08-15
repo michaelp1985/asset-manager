@@ -30,6 +30,10 @@ app.Configure(config =>
         .WithDescription("Add or remove tags on an existing asset");
     config.AddCommand<UpdateAssetCommand>("update")
         .WithDescription("Update an asset's name, description, or metadata");
+    config.AddCommand<SearchAssetCommand>("search")
+        .WithDescription("Search assets by tag, type, or name (at least one filter required)");
+    config.AddCommand<ShowAssetCommand>("show")
+        .WithDescription("Show full detail for a single asset including usage history");
     config.AddBranch("catalog", branch =>
     {
         branch.AddCommand<ExportCatalogCommand>("export")

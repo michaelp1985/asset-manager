@@ -21,6 +21,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AssetImportService>();
         services.AddScoped<AssetExportService>();
         services.AddScoped<AssetEditService>();
+        services.AddScoped<AssetQueryService>();
 
         return services;
     }
