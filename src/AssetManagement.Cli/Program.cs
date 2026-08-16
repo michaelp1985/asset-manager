@@ -7,6 +7,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
+if (args is ["init", ..])
+    return await InitCommand.RunAsync(args[1..]);
+
 var libraryRoot = LibraryDiscovery.FindLibraryRoot();
 if (libraryRoot is null)
 {

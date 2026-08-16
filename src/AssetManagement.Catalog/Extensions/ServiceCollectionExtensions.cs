@@ -24,6 +24,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AssetQueryService>();
         services.AddScoped<CollectionService>();
 
+        using var sp = services.BuildServiceProvider();
+        using var scope = sp.CreateScope();
+        scope.ServiceProvider.GetRequiredService<AssetDbContext>().Database.Migrate();
+
         return services;
     }
 }
