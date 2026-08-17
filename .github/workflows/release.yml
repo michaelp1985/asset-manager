@@ -1,0 +1,86 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Publish CLI
+        run: dotnet publish src/AssetManagement.Cli -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -o dist/linux/cli
+
+      - name: Publish MCP server
+        run: dotnet publish src/AssetManagement.Mcp -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -o dist/linux/mcp
+
+      - name: Package tarball
+        run: |
+          pkg="asset-management-linux-x64"
+          mkdir "$pkg"
+          cp dist/linux/cli/asset "$pkg/"
+          cp dist/linux/mcp/AssetManagement.Mcp "$pkg/"
+          cp installer/linux/install.sh "$pkg/"
+          cp INSTALL.md "$pkg/"
+          chmod +x "$pkg/asset" "$pkg/AssetManagement.Mcp" "$pkg/install.sh"
+          tar czf "$pkg.tar.gz" "$pkg"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-tarball
+          path: asset-management-linux-x64.tar.gz
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Publish CLI
+        run: dotnet publish src/AssetManagement.Cli -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o dist/win/cli
+
+      - name: Publish MCP server
+        run: dotnet publish src/AssetManagement.Mcp -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o dist/win/mcp
+
+      - name: Install NSIS
+        run: choco install nsis -y
+
+      - name: Build installer
+        run: makensis installer/windows/setup.nsi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: dist/win/AssetManagementSetup.exe
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [build-linux, build-windows]
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: linux-tarball
+          path: artifacts
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-installer
+          path: artifacts
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/asset-management-linux-x64.tar.gz
+            artifacts/AssetManagementSetup.exe
