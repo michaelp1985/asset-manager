@@ -25,7 +25,7 @@ public class ImportAssetCommand(AssetImportService importService) : AsyncCommand
 
         [CommandOption("--desc <description>")]
         [Description("Description written for LLM catalog consumption")]
-        public required string Description { get; set; }
+        public string? Description { get; set; }
 
         [CommandOption("--tags <tags>")]
         [Description("Comma-separated name:Category pairs, e.g. space:Theme,character:Content")]
@@ -39,8 +39,6 @@ public class ImportAssetCommand(AssetImportService importService) : AsyncCommand
         {
             if (string.IsNullOrWhiteSpace(Name))
                 return ValidationResult.Error("--name is required.");
-            if (string.IsNullOrWhiteSpace(Description))
-                return ValidationResult.Error("--desc is required.");
             return ValidationResult.Success();
         }
     }
@@ -93,7 +91,7 @@ public class ImportAssetCommand(AssetImportService importService) : AsyncCommand
             FilePath: Path.GetFullPath(settings.FilePath),
             Name: settings.Name,
             Type: assetType,
-            Description: settings.Description,
+            Description: settings.Description ?? string.Empty,
             Tags: tags,
             MetaJson: settings.MetaJson);
 

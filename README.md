@@ -131,7 +131,7 @@ Point your MCP client at the published binary, with the library root in its env:
 | Command | Description |
 |---|---|
 | `asset init [--path <dir>] [--non-interactive]` | Create a new library (dirs, marker file, DB) |
-| `asset import <file> --name <name> --type <type> --desc <desc> [--tags <tags>] [--meta <json>]` | Import an asset file |
+| `asset import <file> --name <name> [--type <type>] [--desc <desc>] [--tags <tags>] [--meta <json>]` | Import an asset file (type auto-detected from extension if omitted) |
 | `asset export <id> <destination> --game <name>` | Copy an asset into a game project and log the usage |
 | `asset tag <id> [--add <tags>] [--remove <names>]` | Add or remove tags on an existing asset |
 | `asset update <id> [--name <name>] [--desc <desc>] [--meta <json>]` | Update name, description, or metadata |
