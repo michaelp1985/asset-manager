@@ -30,8 +30,39 @@ vocabulary before it sees the asset list.
 
 ## Installation
 
-There's no packaged installer yet (that's the next milestone — see
-`PLAN-PUBLISH.md`). For now, build from source:
+### Windows / Linux installer (recommended)
+
+Installers for both platforms live in `installer/`, but there's no published
+release yet — the GitHub Actions packaging job is still on the list (see
+`PLAN-PUBLISH.md`). Until then, build them locally.
+
+**Windows** — needs the [.NET 10 SDK](https://dotnet.microsoft.com/download) and [NSIS 3](https://nsis.sourceforge.io/) (`makensis` on `PATH`):
+
+```bash
+dotnet publish src/AssetManagement.Cli -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o dist/win/cli
+dotnet publish src/AssetManagement.Mcp -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o dist/win/mcp
+makensis installer/windows/setup.nsi
+```
+
+Run the resulting `dist/win/AssetManagementSetup.exe`. It installs both
+binaries, adds them to `PATH`, and runs `asset init` for you — the finish page
+offers the MCP config snippet to paste into your client.
+
+**Linux** — needs the [.NET 10 SDK](https://dotnet.microsoft.com/download):
+
+```bash
+dotnet publish src/AssetManagement.Cli -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -o dist/linux/cli
+dotnet publish src/AssetManagement.Mcp -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -o dist/linux/mcp
+cp dist/linux/cli/asset dist/linux/mcp/AssetManagement.Mcp installer/linux/install.sh dist/linux/
+cd dist/linux && ./install.sh
+```
+
+The script installs both binaries, symlinks `asset` onto your `PATH`, and runs
+`asset init` for you, printing the MCP config snippet at the end.
+
+### Build from source
+
+For development, or if you'd rather skip the installers:
 
 **Requirements:** [.NET 10 SDK](https://dotnet.microsoft.com/download)
 
@@ -68,7 +99,8 @@ export ASSET_LIBRARY_ROOT=/path/to/library
 dotnet run --project src/AssetManagement.Cli -- search --type Image
 ```
 
-For everyday use, publish a binary and put it on your `PATH`:
+For everyday use without building an installer, publish a binary and put it
+on your `PATH`:
 
 ```bash
 dotnet publish src/AssetManagement.Cli -c Release -o ~/.local/share/asset-management/cli
