@@ -1,6 +1,7 @@
 # Build output
 bin/
 obj/
+dist/
 
 # dotnet tools (if switching to local tool manifest later)
 .config/
