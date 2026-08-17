@@ -21,6 +21,13 @@ public sealed class ExportAssetCommand(AssetExportService exportService) : Async
         [CommandOption("--game <name>")]
         [Description("Name of the game project receiving the asset")]
         public required string GameName { get; set; }
+
+        public override ValidationResult Validate()
+        {
+            if (string.IsNullOrWhiteSpace(GameName))
+                return ValidationResult.Error("--game is required.");
+            return ValidationResult.Success();
+        }
     }
 
     protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)

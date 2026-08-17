@@ -20,8 +20,8 @@ public class ImportAssetCommand(AssetImportService importService) : AsyncCommand
         public required string Name { get; set; }
 
         [CommandOption("--type <type>")]
-        [Description("Asset type: Spritesheet | Image | Audio | Tileset | Font | Video | Data")]
-        public required string Type { get; set; }
+        [Description("Asset type: Spritesheet | Image | Audio | Tileset | Font | Video | Data. Omit to detect from the file extension.")]
+        public string? Type { get; set; }
 
         [CommandOption("--desc <description>")]
         [Description("Description written for LLM catalog consumption")]
@@ -34,14 +34,44 @@ public class ImportAssetCommand(AssetImportService importService) : AsyncCommand
         [CommandOption("--meta <json>")]
         [Description("Optional JSON metadata blob (frames, dimensions, duration, etc.)")]
         public string? MetaJson { get; set; }
+
+        public override ValidationResult Validate()
+        {
+            if (string.IsNullOrWhiteSpace(Name))
+                return ValidationResult.Error("--name is required.");
+            if (string.IsNullOrWhiteSpace(Description))
+                return ValidationResult.Error("--desc is required.");
+            return ValidationResult.Success();
+        }
     }
 
     protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
-        if (!Enum.TryParse<AssetType>(settings.Type, ignoreCase: true, out var assetType))
+        AssetType assetType;
+        if (!string.IsNullOrWhiteSpace(settings.Type))
         {
-            AnsiConsole.MarkupLine($"[red]Error:[/] Unknown asset type '{settings.Type}'. Valid values: {string.Join(", ", Enum.GetNames<AssetType>())}");
-            return 1;
+            if (!Enum.TryParse(settings.Type, ignoreCase: true, out assetType))
+            {
+                AnsiConsole.MarkupLine($"[red]Error:[/] Unknown asset type '{settings.Type}'. Valid values: {string.Join(", ", Enum.GetNames<AssetType>())}");
+                return 1;
+            }
+        }
+        else
+        {
+            var detected = DetectTypeFromExtension(settings.FilePath);
+            if (detected is not { } detectedType)
+            {
+                AnsiConsole.MarkupLine("[red]Error:[/] Could not detect asset type from the file extension. Pass --type explicitly (see --help for valid values).");
+                return 1;
+            }
+
+            if (!AnsiConsole.Confirm($"Detected type: [yellow]{detectedType}[/]. Use this?"))
+            {
+                AnsiConsole.MarkupLine("[red]Error:[/] Re-run with --type explicitly (see --help for valid values).");
+                return 1;
+            }
+
+            assetType = detectedType;
         }
 
         List<TagInput> tags = [];
@@ -90,4 +120,15 @@ public class ImportAssetCommand(AssetImportService importService) : AsyncCommand
 
         return 0;
     }
+
+    private static AssetType? DetectTypeFromExtension(string filePath) =>
+        Path.GetExtension(filePath).ToLowerInvariant() switch
+        {
+            ".png" or ".jpg" or ".jpeg" or ".gif" or ".bmp" or ".webp" or ".tga" or ".tiff" => AssetType.Image,
+            ".mp3" or ".wav" or ".ogg" or ".flac" or ".aac" => AssetType.Audio,
+            ".mp4" or ".webm" or ".mov" or ".avi" or ".mkv" => AssetType.Video,
+            ".ttf" or ".otf" or ".woff" or ".woff2" => AssetType.Font,
+            ".json" or ".xml" or ".csv" or ".yaml" or ".yml" => AssetType.Data,
+            _ => null
+        };
 }

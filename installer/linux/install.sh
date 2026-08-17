@@ -43,7 +43,10 @@ install -m 755 "$SCRIPT_DIR/AssetManagement.Mcp" "$install_dir/AssetManagement.M
 mkdir -p "$BIN_DIR"
 ln -sf "$install_dir/asset" "$BIN_DIR/asset"
 
-# 6. Make sure ~/.local/bin is on PATH
+# 6. Make sure ~/.local/bin is on PATH, and ASSET_LIBRARY_ROOT is set
+# (the CLI only finds the library via that env var or by walking up from the
+# current directory looking for .assetlibrary - without this it only works
+# when you happen to be inside the library folder).
 add_path_line() {
     local rc_file="$1" line="$2"
     if [[ -f "$rc_file" ]] && grep -qF "$line" "$rc_file"; then
@@ -53,6 +56,29 @@ add_path_line() {
     echo "Updated $rc_file"
 }
 
+# Replaces any previous ASSET_LIBRARY_ROOT line from an earlier install (in
+# case the library path changed) rather than appending a stale duplicate.
+upsert_line() {
+    local rc_file="$1" pattern="$2" line="$3"
+    [[ -f "$rc_file" ]] || return
+    if grep -qF "$line" "$rc_file"; then
+        return
+    fi
+    if grep -qE "$pattern" "$rc_file"; then
+        local tmp
+        tmp="$(mktemp)"
+        grep -vE "$pattern" "$rc_file" >"$tmp"
+        mv "$tmp" "$rc_file"
+    fi
+    printf '\n# Added by asset-management installer\n%s\n' "$line" >>"$rc_file"
+    echo "Updated $rc_file"
+}
+
+if command -v fish >/dev/null 2>&1; then
+    mkdir -p "$HOME/.config/fish"
+    touch "$HOME/.config/fish/config.fish"
+fi
+
 case ":${PATH}:" in
     *":$BIN_DIR:"*)
         ;;
@@ -60,13 +86,15 @@ case ":${PATH}:" in
         echo "Adding $BIN_DIR to PATH..."
         [[ -f "$HOME/.bashrc" ]] && add_path_line "$HOME/.bashrc" 'export PATH="$HOME/.local/bin:$PATH"'
         [[ -f "$HOME/.zshrc" ]] && add_path_line "$HOME/.zshrc" 'export PATH="$HOME/.local/bin:$PATH"'
-        if command -v fish >/dev/null 2>&1; then
-            mkdir -p "$HOME/.config/fish"
-            add_path_line "$HOME/.config/fish/config.fish" 'set -gx PATH $HOME/.local/bin $PATH'
-        fi
+        [[ -f "$HOME/.config/fish/config.fish" ]] && add_path_line "$HOME/.config/fish/config.fish" 'set -gx PATH $HOME/.local/bin $PATH'
         echo "Restart your shell (or source your rc file) for 'asset' to be available directly."
         ;;
 esac
+
+echo "Setting ASSET_LIBRARY_ROOT..."
+[[ -f "$HOME/.bashrc" ]] && upsert_line "$HOME/.bashrc" '^export ASSET_LIBRARY_ROOT=' "export ASSET_LIBRARY_ROOT=\"$library_path\""
+[[ -f "$HOME/.zshrc" ]] && upsert_line "$HOME/.zshrc" '^export ASSET_LIBRARY_ROOT=' "export ASSET_LIBRARY_ROOT=\"$library_path\""
+[[ -f "$HOME/.config/fish/config.fish" ]] && upsert_line "$HOME/.config/fish/config.fish" '^set -gx ASSET_LIBRARY_ROOT ' "set -gx ASSET_LIBRARY_ROOT \"$library_path\""
 
 # 7. Initialize the library (also prints the MCP config snippet - step 8)
 echo ""
@@ -75,4 +103,4 @@ echo "Initializing asset library at $library_path ..."
 
 echo ""
 echo "Install complete. Binaries installed to: $install_dir"
-echo "Run 'asset --help' to get started (open a new shell first if PATH was just updated)."
+echo "Open a new shell (or source your rc file) so PATH and ASSET_LIBRARY_ROOT take effect, then run 'asset --help'."
