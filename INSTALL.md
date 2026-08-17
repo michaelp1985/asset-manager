@@ -28,12 +28,12 @@ in its environment.
 ## Uninstalling
 
 ```bash
-rm -rf ~/.local/share/asset-management ~/.local/bin/asset
+./uninstall.sh
 ```
 
-Then remove the `# Added by asset-management installer` block from
-`~/.bashrc` / `~/.zshrc` / `~/.config/fish/config.fish`. Your asset library
-(the directory you chose during install) is left untouched.
+Removes the binaries, the `asset` symlink, and the PATH/`ASSET_LIBRARY_ROOT`
+lines added to your shell rc files. Your asset library (the directory you
+chose during install) is left untouched.
 
 ## Requirements
 

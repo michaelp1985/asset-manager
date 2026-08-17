@@ -28,8 +28,9 @@ jobs:
           cp dist/linux/cli/asset "$pkg/"
           cp dist/linux/mcp/AssetManagement.Mcp "$pkg/"
           cp installer/linux/install.sh "$pkg/"
+          cp installer/linux/uninstall.sh "$pkg/"
           cp INSTALL.md "$pkg/"
-          chmod +x "$pkg/asset" "$pkg/AssetManagement.Mcp" "$pkg/install.sh"
+          chmod +x "$pkg/asset" "$pkg/AssetManagement.Mcp" "$pkg/install.sh" "$pkg/uninstall.sh"
           tar czf "$pkg.tar.gz" "$pkg"
 
       - uses: actions/upload-artifact@v4
