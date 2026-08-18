@@ -1,6 +1,6 @@
 # Asset Management
 
-A standalone game asset library. Assets are imported once, tagged and cataloged in
+A standalone game asset library manager. Assets are imported once, tagged and cataloged in
 SQLite, and copied into individual game projects on export — games hold their own
 snapshot with no live reference back to the library, so the library can evolve
 without breaking anything downstream.
