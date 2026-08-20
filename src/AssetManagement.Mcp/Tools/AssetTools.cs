@@ -16,8 +16,8 @@ public class AssetTools(AssetImportService importService, AssetExportService exp
         [Description("Human-readable name for the asset")] string name,
         [Description("Asset type: Spritesheet | Image | Audio | Tileset | Font | Video | Data")] string type,
         [Description("Description written for LLM catalog consumption")] string description,
-        [Description("Comma-separated tags in name:Category format, e.g. space:Theme,character:Content")] string? tags = null,
-        [Description("Optional JSON metadata blob (frames, dimensions, duration, etc.)")] string? metaJson = null)
+        [Description("Comma-separated tags in name:Category format, where Category is one of: Theme | Content | Attribute. E.g. space:Theme,character:Content,rusty:Attribute")] string tags = "",
+        [Description("Optional JSON metadata blob (frames, dimensions, duration, etc.)")] string metaJson = "")
     {
         if (!Enum.TryParse<AssetType>(type, ignoreCase: true, out var assetType))
             throw new ArgumentException($"Unknown asset type '{type}'. Valid values: {string.Join(", ", Enum.GetNames<AssetType>())}");
@@ -30,7 +30,7 @@ public class AssetTools(AssetImportService importService, AssetExportService exp
             Type: assetType,
             Description: description,
             Tags: tagInputs,
-            MetaJson: metaJson);
+            MetaJson: NullIfEmpty(metaJson));
 
         var result = await importService.ImportAsync(request);
 
@@ -55,9 +55,9 @@ public class AssetTools(AssetImportService importService, AssetExportService exp
     [McpServerTool, Description("Create a new asset collection. Returns the created collection as JSON.")]
     public async Task<string> CreateCollection(
         [Description("Collection name")] string name,
-        [Description("Optional description")] string? description = null)
+        [Description("Optional description")] string description = "")
     {
-        var result = await collectionService.CreateAsync(name, description);
+        var result = await collectionService.CreateAsync(name, NullIfEmpty(description));
         return JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true });
     }
 
@@ -90,16 +90,16 @@ public class AssetTools(AssetImportService importService, AssetExportService exp
 
     [McpServerTool, Description("Search assets by tag, type, or name. At least one filter required. Returns paginated JSON.")]
     public async Task<string> SearchAssets(
-        [Description("Filter by tag name (partial match)")] string? tag = null,
-        [Description("Filter by asset type: Spritesheet | Image | Audio | Tileset | Font | Video | Data")] string? type = null,
-        [Description("Filter by asset name (partial match)")] string? name = null,
+        [Description("Filter by tag name (partial match)")] string tag = "",
+        [Description("Filter by asset type: Spritesheet | Image | Audio | Tileset | Font | Video | Data")] string type = "",
+        [Description("Filter by asset name (partial match)")] string name = "",
         [Description("Page number (default: 1)")] int page = 1,
         [Description("Results per page (default: 20)")] int pageSize = 20)
     {
         if (string.IsNullOrWhiteSpace(tag) && string.IsNullOrWhiteSpace(type) && string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Specify at least one of: tag, type, or name.");
 
-        var result = await queryService.SearchAsync(tag, type, name, page, pageSize);
+        var result = await queryService.SearchAsync(NullIfEmpty(tag), NullIfEmpty(type), NullIfEmpty(name), page, pageSize);
         return JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true });
     }
 
@@ -114,7 +114,11 @@ public class AssetTools(AssetImportService importService, AssetExportService exp
         return result is null ? null : JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true });
     }
 
-    private static List<TagInput> ParseTags(string? tags)
+    // Optional MCP tool parameters use "" rather than null as the empty sentinel — a nullable
+    // string schema (["string","null"]) trips up some smaller tool-calling models' JSON generation.
+    private static string? NullIfEmpty(string value) => string.IsNullOrWhiteSpace(value) ? null : value;
+
+    private static List<TagInput> ParseTags(string tags)
     {
         if (string.IsNullOrWhiteSpace(tags)) return [];
 

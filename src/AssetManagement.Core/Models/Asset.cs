@@ -11,6 +11,7 @@ public class Asset
     public string Filename { get; set; } = string.Empty;
     public int Version { get; set; } = 1;
     public string? MetaJson { get; set; }
+    public string? ContentHash { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 

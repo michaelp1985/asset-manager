@@ -50,6 +50,11 @@ public class AssetDbContext(DbContextOptions<AssetDbContext> options) : DbContex
             .IsUnique();
 
         modelBuilder.Entity<Asset>()
+            .HasIndex(a => a.ContentHash)
+            .IsUnique()
+            .HasFilter("\"ContentHash\" IS NOT NULL");
+
+        modelBuilder.Entity<Asset>()
             .Property(a => a.Type)
             .HasConversion<string>();
 

@@ -106,6 +106,11 @@ public class ImportAssetCommand(AssetImportService importService) : AsyncCommand
             AnsiConsole.MarkupLine($"[red]Error:[/] {ex.Message}");
             return 1;
         }
+        catch (InvalidOperationException ex)
+        {
+            AnsiConsole.MarkupLine($"[red]Error:[/] {ex.Message}");
+            return 1;
+        }
 
         var table = new Table()
             .AddColumn("ID")

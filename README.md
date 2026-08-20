@@ -154,6 +154,12 @@ Point your MCP client at the published binary, with the library root in its env:
 `RemoveAssetFromCollection`, `GetCollections`, `SearchAssets`, `GetAsset` — same
 underlying operations as the CLI commands above, exposed for a game-dev agent.
 
+## Documentation
+
+- **Architecture (C4)** — `docs/c4/01-context.md`, `02-container.md`, `03-component.md`
+- **Architecture decisions** — `docs/adr/`
+- **Plans** (repo root, one level up from this file) — `PLAN.md` (feature roadmap), `PLAN-PUBLISH.md` (packaging/installers), `PLAN-UI.md` (proposed web UI)
+
 ## Project layout
 
 - `src/AssetManagement.Core` — domain models, enums

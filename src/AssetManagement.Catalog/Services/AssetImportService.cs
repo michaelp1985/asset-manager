@@ -3,6 +3,7 @@ using AssetManagement.Catalog.Settings;
 using AssetManagement.Core.Models;
 using AssetManagement.Data.Contexts;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 
 namespace AssetManagement.Catalog.Services;
@@ -22,10 +23,24 @@ public class AssetImportService(AssetDbContext db, LibrarySettings settings, Cat
         var filename = $"{id}_{slug}{ext}";
         var destination = Path.Combine(settings.AssetsPath, filename);
 
-        File.Copy(request.FilePath, destination, overwrite: false);
+        string contentHash;
+        await using (var sourceStream = File.OpenRead(request.FilePath))
+        await using (var destStream = File.Create(destination))
+        using (var sha256 = SHA256.Create())
+        await using (var cryptoStream = new CryptoStream(destStream, sha256, CryptoStreamMode.Write))
+        {
+            await sourceStream.CopyToAsync(cryptoStream, ct);
+            await cryptoStream.FlushFinalBlockAsync(ct);
+            contentHash = Convert.ToHexString(sha256.Hash!);
+        }
 
         try
         {
+            var existing = await db.Assets.FirstOrDefaultAsync(a => a.ContentHash == contentHash, ct);
+            if (existing is not null)
+                throw new InvalidOperationException(
+                    $"This file is already in the library as '{existing.Name}' (Id: {existing.Id}).");
+
             var now = DateTime.UtcNow;
             var asset = new Asset
             {
@@ -36,6 +51,7 @@ public class AssetImportService(AssetDbContext db, LibrarySettings settings, Cat
                 Filename = filename,
                 Version = 1,
                 MetaJson = request.MetaJson,
+                ContentHash = contentHash,
                 CreatedAt = now,
                 UpdatedAt = now
             };
